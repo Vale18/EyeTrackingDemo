@@ -1,9 +1,9 @@
 {
     "m_SelectedDeviceId": "PA8A10PGGC010016A",
     "m_SelectedPackage": {
-        "deviceId": "",
-        "name": "",
-        "processId": 0,
+        "deviceId": "PA8A10PGGC010016A",
+        "name": "com.DefaultCompany.PICOEyeTracking",
+        "processId": 12401,
         "exited": false
     },
     "m_SelectedPriority": 0,
@@ -31,6 +31,24 @@
             "name": "com.DefaultCompany.PICOEyeTracking",
             "processId": 6573,
             "exited": true
+        },
+        {
+            "deviceId": "PA8A10PGGC010016A",
+            "name": "com.DefaultCompany.PICOEyeTracking",
+            "processId": 8661,
+            "exited": false
+        },
+        {
+            "deviceId": "PA8A10PGGC010016A",
+            "name": "com.DefaultCompany.PICOEyeTracking",
+            "processId": 11722,
+            "exited": false
+        },
+        {
+            "deviceId": "PA8A10PGGC010016A",
+            "name": "com.DefaultCompany.PICOEyeTracking",
+            "processId": 12401,
+            "exited": false
         }
     ],
     "m_Tags": {

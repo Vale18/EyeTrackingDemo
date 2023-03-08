@@ -2,19 +2,19 @@
 using Unity.XR.PXR;
 using UnityEngine.XR;
 using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
+using UnityEngine.Experimental.GlobalIllumination;
 
-[RequireComponent( typeof( LineRenderer))]
 public class EyeTrackingManager : MonoBehaviour
 {
     public GameObject EyeCoordinates;
     public GameObject Models;
     public Transform Greenpoint;
 
-    //---------------Line visual------------------
     private Vector3 combineEyeGazeVector;
     private Vector3 combineEyeGazePoint;
-    private LineRenderer lineRenderer;
     private Matrix4x4 matrix;
+
+    public GameObject SpotLight;
 
     private RaycastHit hitinfo;
     
@@ -24,12 +24,13 @@ public class EyeTrackingManager : MonoBehaviour
     void Start()
     {
         //Get Line renderer
+        /*
         if (!lineRenderer)
         {
             lineRenderer = transform.GetComponent<LineRenderer>();
         }
         InitializeLine();
-
+        */
         combineEyeGazeVector = Vector3.zero;
         combineEyeGazePoint = Vector3.zero;
     }
@@ -37,11 +38,14 @@ public class EyeTrackingManager : MonoBehaviour
     /// <summary>
     /// Initialize the line
     /// </summary>
+    /// 
+    /*
     void InitializeLine()
     {
         lineRenderer.startWidth = 0.002f;
         lineRenderer.endWidth = 0.002f;
     }
+    */
 
     void Update()
     {
@@ -56,8 +60,9 @@ public class EyeTrackingManager : MonoBehaviour
         var DirectionOffset = matrix.MultiplyVector(combineEyeGazeVector);
 
 
-        lineRenderer.SetPosition(0, RealOriginOffset); 
-        lineRenderer.SetPosition(1, DirectionOffset * 20); 
+        SpotLight.transform.position = RealOriginOffset;
+        SpotLight.transform.rotation = Quaternion.LookRotation(DirectionOffset, Vector3.up);
+
         GazeTargetControl(RealOriginOffset, DirectionOffset);
         bool triggerIsDone;
         if (InputDevices.GetDeviceAtXRNode(XRNode.RightHand).TryGetFeatureValue(CommonUsages.triggerButton, out triggerIsDone) && triggerIsDone)
