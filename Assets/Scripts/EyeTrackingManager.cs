@@ -1,20 +1,25 @@
 ﻿using UnityEngine;
 using Unity.XR.PXR;
 using UnityEngine.XR;
-using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
-using UnityEngine.Experimental.GlobalIllumination;
+using TMPro;
 
 public class EyeTrackingManager : MonoBehaviour
 {
     public GameObject EyeCoordinates;
     public GameObject Models;
     public Transform Greenpoint;
+    public GameObject SpotLight;
+    public TMP_Text GazeOffsetText;
 
     private Vector3 combineEyeGazeVector;
-    private Vector3 combineEyeGazePoint;
+    private Vector3 combineEyeGazeOriginOffset;
+    private Vector3 combineEyeGazeOrigin;
     private Matrix4x4 matrix;
 
-    public GameObject SpotLight;
+    private Vector3 combineEyeGazeVectorInWorldSpace;
+    private Vector3 combineEyeGazeOriginInWorldSpace;
+
+    private Vector2 primary2DAxis;
 
     private RaycastHit hitinfo;
     
@@ -23,47 +28,36 @@ public class EyeTrackingManager : MonoBehaviour
     private bool wasPressed;
     void Start()
     {
-        //Get Line renderer
-        /*
-        if (!lineRenderer)
-        {
-            lineRenderer = transform.GetComponent<LineRenderer>();
-        }
-        InitializeLine();
-        */
+        combineEyeGazeOriginOffset = Vector3.zero;
         combineEyeGazeVector = Vector3.zero;
-        combineEyeGazePoint = Vector3.zero;
+        combineEyeGazeOrigin = Vector3.zero;
     }
-
-    /// <summary>
-    /// Initialize the line
-    /// </summary>
-    /// 
-    /*
-    void InitializeLine()
-    {
-        lineRenderer.startWidth = 0.002f;
-        lineRenderer.endWidth = 0.002f;
-    }
-    */
 
     void Update()
     {
 
+        if (InputDevices.GetDeviceAtXRNode(XRNode.RightHand).TryGetFeatureValue(CommonUsages.primary2DAxis, out primary2DAxis))
+        {
+
+            combineEyeGazeOriginOffset.x += primary2DAxis.x*0.001f;
+            combineEyeGazeOriginOffset.y += primary2DAxis.y*0.001f;
+
+        }
+        GazeOffsetText.text = combineEyeGazeOriginOffset.ToString("F3");
         PXR_EyeTracking.GetHeadPosMatrix(out matrix);
 
         PXR_EyeTracking.GetCombineEyeGazeVector(out combineEyeGazeVector);
-        PXR_EyeTracking.GetCombineEyeGazePoint(out combineEyeGazePoint);
+        PXR_EyeTracking.GetCombineEyeGazePoint(out combineEyeGazeOrigin);
 
 
-        var RealOriginOffset = matrix.MultiplyPoint(combineEyeGazePoint);
-        var DirectionOffset = matrix.MultiplyVector(combineEyeGazeVector);
+        combineEyeGazeOrigin += combineEyeGazeOriginOffset;
+        combineEyeGazeOriginInWorldSpace = matrix.MultiplyPoint(combineEyeGazeOrigin);
+        combineEyeGazeVectorInWorldSpace = matrix.MultiplyVector(combineEyeGazeVector);
 
+        SpotLight.transform.position = combineEyeGazeOriginInWorldSpace;
+        SpotLight.transform.rotation = Quaternion.LookRotation(combineEyeGazeVectorInWorldSpace, Vector3.up);
 
-        SpotLight.transform.position = RealOriginOffset;
-        SpotLight.transform.rotation = Quaternion.LookRotation(DirectionOffset, Vector3.up);
-
-        GazeTargetControl(RealOriginOffset, DirectionOffset);
+        GazeTargetControl(combineEyeGazeOriginInWorldSpace, combineEyeGazeVectorInWorldSpace);
         bool triggerIsDone;
         if (InputDevices.GetDeviceAtXRNode(XRNode.RightHand).TryGetFeatureValue(CommonUsages.triggerButton, out triggerIsDone) && triggerIsDone)
         {
@@ -75,7 +69,10 @@ public class EyeTrackingManager : MonoBehaviour
         {
             wasPressed = false;
         }
+
+        
     }
+
 
     void GazeTargetControl(Vector3 origin,Vector3 vector)
     {

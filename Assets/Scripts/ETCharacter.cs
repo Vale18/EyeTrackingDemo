@@ -5,7 +5,7 @@ using UnityEngine.Experimental.GlobalIllumination;
 
 public class ETCharacter : ETObject
 {
-    private static string isFocused_Animation = "IsFocused";
+    private const string isFocused_Animation = "IsFocused";
 
     public GameObject SpotLight;
     public override void IsFocused()
