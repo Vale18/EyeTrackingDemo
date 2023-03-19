@@ -10,20 +10,23 @@ public class EyeTrackingManager : MonoBehaviour
     public Transform Greenpoint;
     public GameObject SpotLight;
     public TMP_Text GazeOffsetText;
-
+    
     private Vector3 combineEyeGazeVector;
     private Vector3 combineEyeGazeOriginOffset;
     private Vector3 combineEyeGazeOrigin;
-    private Matrix4x4 matrix;
+    private Matrix4x4 headPoseMatrix;
 
     private Vector3 combineEyeGazeVectorInWorldSpace;
     private Vector3 combineEyeGazeOriginInWorldSpace;
 
+    private uint leftEyeStatus;
+    private uint rightEyeStatus;
+
     private Vector2 primary2DAxis;
 
     private RaycastHit hitinfo;
-    
-    private Transform selectObj;
+
+    private Transform selectedObj;
 
     private bool wasPressed;
     void Start()
@@ -35,7 +38,7 @@ public class EyeTrackingManager : MonoBehaviour
 
     void Update()
     {
-
+        //Offest Adjustment
         if (InputDevices.GetDeviceAtXRNode(XRNode.RightHand).TryGetFeatureValue(CommonUsages.primary2DAxis, out primary2DAxis))
         {
 
@@ -44,20 +47,22 @@ public class EyeTrackingManager : MonoBehaviour
 
         }
         GazeOffsetText.text = combineEyeGazeOriginOffset.ToString("F3");
-        PXR_EyeTracking.GetHeadPosMatrix(out matrix);
 
+               
+        PXR_EyeTracking.GetHeadPosMatrix(out headPoseMatrix);
         PXR_EyeTracking.GetCombineEyeGazeVector(out combineEyeGazeVector);
         PXR_EyeTracking.GetCombineEyeGazePoint(out combineEyeGazeOrigin);
 
-
+        //Translate Eye Gaze point and vector to world space
         combineEyeGazeOrigin += combineEyeGazeOriginOffset;
-        combineEyeGazeOriginInWorldSpace = matrix.MultiplyPoint(combineEyeGazeOrigin);
-        combineEyeGazeVectorInWorldSpace = matrix.MultiplyVector(combineEyeGazeVector);
+        combineEyeGazeOriginInWorldSpace = headPoseMatrix.MultiplyPoint(combineEyeGazeOrigin);
+        combineEyeGazeVectorInWorldSpace = headPoseMatrix.MultiplyVector(combineEyeGazeVector);
 
         SpotLight.transform.position = combineEyeGazeOriginInWorldSpace;
         SpotLight.transform.rotation = Quaternion.LookRotation(combineEyeGazeVectorInWorldSpace, Vector3.up);
 
         GazeTargetControl(combineEyeGazeOriginInWorldSpace, combineEyeGazeVectorInWorldSpace);
+
         bool triggerIsDone;
         if (InputDevices.GetDeviceAtXRNode(XRNode.RightHand).TryGetFeatureValue(CommonUsages.triggerButton, out triggerIsDone) && triggerIsDone)
         {
@@ -69,7 +74,7 @@ public class EyeTrackingManager : MonoBehaviour
         {
             wasPressed = false;
         }
-
+        
         
     }
 
@@ -77,35 +82,36 @@ public class EyeTrackingManager : MonoBehaviour
     void GazeTargetControl(Vector3 origin,Vector3 vector)
     {
         Ray ray = new Ray(origin,vector);
-        if (Physics.Raycast(ray, out hitinfo))
+        if (Physics.SphereCast(origin,0.0005f,vector,out hitinfo))
+        //if (Physics.Raycast(ray, out hitinfo))
         {
-            if (hitinfo.collider.transform.name.Equals("zbx"))
+            if (hitinfo.collider.transform.tag.Equals("Target"))
             {
                 Greenpoint.gameObject.SetActive(true);
                 Greenpoint.position= hitinfo.point;
             }
 
-            if (selectObj != null && selectObj != hitinfo.transform)
+            if (selectedObj != null && selectedObj != hitinfo.transform)
             {
-                if(selectObj.GetComponent<ETObject>()!=null)
-                    selectObj.GetComponent<ETObject>().UnFocused();
-                selectObj = null;
+                if(selectedObj.GetComponent<ETObject>()!=null)
+                    selectedObj.GetComponent<ETObject>().UnFocused();
+                selectedObj = null;
             }
-            else if (selectObj == null)
+            else if (selectedObj == null)
             {
-                selectObj = hitinfo.transform;
-                if (selectObj.GetComponent<ETObject>() != null)
-                    selectObj.GetComponent<ETObject>().IsFocused();
+                selectedObj = hitinfo.transform;
+                if (selectedObj.GetComponent<ETObject>() != null)
+                    selectedObj.GetComponent<ETObject>().IsFocused();
             }
 
         }
         else
         {
-            if (selectObj != null)
+            if (selectedObj != null)
             {
-               if (selectObj.GetComponent<ETObject>() != null)
-                    selectObj.GetComponent<ETObject>().UnFocused();
-                selectObj = null;
+               if (selectedObj.GetComponent<ETObject>() != null)
+                    selectedObj.GetComponent<ETObject>().UnFocused();
+                selectedObj = null;
             }
             Greenpoint.gameObject.SetActive(false);
         }    
