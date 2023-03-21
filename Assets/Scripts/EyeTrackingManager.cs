@@ -62,19 +62,6 @@ public class EyeTrackingManager : MonoBehaviour
         SpotLight.transform.rotation = Quaternion.LookRotation(combineEyeGazeVectorInWorldSpace, Vector3.up);
 
         GazeTargetControl(combineEyeGazeOriginInWorldSpace, combineEyeGazeVectorInWorldSpace);
-
-        bool triggerIsDone;
-        if (InputDevices.GetDeviceAtXRNode(XRNode.RightHand).TryGetFeatureValue(CommonUsages.triggerButton, out triggerIsDone) && triggerIsDone)
-        {
-            if(!wasPressed)
-                ToggleCoordinates();
-            wasPressed = true;
-        }
-        else
-        {
-            wasPressed = false;
-        }
-        
         
     }
 
@@ -83,7 +70,6 @@ public class EyeTrackingManager : MonoBehaviour
     {
         Ray ray = new Ray(origin,vector);
         if (Physics.SphereCast(origin,0.0005f,vector,out hitinfo))
-        //if (Physics.Raycast(ray, out hitinfo))
         {
             if (hitinfo.collider.transform.tag.Equals("Target"))
             {
@@ -115,11 +101,5 @@ public class EyeTrackingManager : MonoBehaviour
             }
             Greenpoint.gameObject.SetActive(false);
         }    
-    }
-
-    public void ToggleCoordinates()
-    {
-        EyeCoordinates.SetActive(!EyeCoordinates.activeSelf);
-        Models.SetActive(!Models.activeSelf);
     }
 }
