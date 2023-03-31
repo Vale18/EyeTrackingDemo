@@ -22,7 +22,7 @@ To enable eye tracking feature you need to mark the Eye Tracking check box on PX
 
 This part shows how to get eye-tracking data with PXR_EyeTracking.GetCombineEyeGazeVector(out combineEyeGazeVector) and PXR_EyeTracking.GetCombineEyeGazePoint(out combineEyeGazeOrigin). Then by applying the HeadPostMatrix, you can make a sphere cast to interact with 3D objects. You can also adjust eye tracking offest with trigger button on right controller.
 
-![Screenshot](https://github.com/picoxr/EyeTrackingDemo/blob/eb8677aca7d30c2506d2e8ab0b0ed992c00e9d8a/Screenshots/Calibration.png)
+![Screenshot](https://github.com/picoxr/EyeTrackingDemo/blob/bd7e1f592971bd35fc4fca292f05afb7add51ab5/Screenshots/Calibration.png)
 
 2.  **3D models**
 
