@@ -5,6 +5,7 @@ using TMPro;
 
 public class EyeTrackingManager : MonoBehaviour
 {
+    public Transform Origin;
     public GameObject EyeCoordinates;
     public GameObject Models;
     public Transform Greenpoint;
@@ -15,6 +16,7 @@ public class EyeTrackingManager : MonoBehaviour
     private Vector3 combineEyeGazeOriginOffset;
     private Vector3 combineEyeGazeOrigin;
     private Matrix4x4 headPoseMatrix;
+    private Matrix4x4 originPoseMatrix;
 
     private Vector3 combineEyeGazeVectorInWorldSpace;
     private Vector3 combineEyeGazeOriginInWorldSpace;
@@ -34,6 +36,7 @@ public class EyeTrackingManager : MonoBehaviour
         combineEyeGazeOriginOffset = Vector3.zero;
         combineEyeGazeVector = Vector3.zero;
         combineEyeGazeOrigin = Vector3.zero;
+        originPoseMatrix = Origin.localToWorldMatrix;
     }
 
     void Update()
@@ -48,15 +51,15 @@ public class EyeTrackingManager : MonoBehaviour
         }
         GazeOffsetText.text = combineEyeGazeOriginOffset.ToString("F3");
 
-               
+
+
         PXR_EyeTracking.GetHeadPosMatrix(out headPoseMatrix);
         PXR_EyeTracking.GetCombineEyeGazeVector(out combineEyeGazeVector);
         PXR_EyeTracking.GetCombineEyeGazePoint(out combineEyeGazeOrigin);
-
         //Translate Eye Gaze point and vector to world space
         combineEyeGazeOrigin += combineEyeGazeOriginOffset;
-        combineEyeGazeOriginInWorldSpace = headPoseMatrix.MultiplyPoint(combineEyeGazeOrigin);
-        combineEyeGazeVectorInWorldSpace = headPoseMatrix.MultiplyVector(combineEyeGazeVector);
+        combineEyeGazeOriginInWorldSpace = originPoseMatrix.MultiplyPoint(headPoseMatrix.MultiplyPoint(combineEyeGazeOrigin));
+        combineEyeGazeVectorInWorldSpace = originPoseMatrix.MultiplyVector(headPoseMatrix.MultiplyVector(combineEyeGazeVector));
 
         SpotLight.transform.position = combineEyeGazeOriginInWorldSpace;
         SpotLight.transform.rotation = Quaternion.LookRotation(combineEyeGazeVectorInWorldSpace, Vector3.up);
